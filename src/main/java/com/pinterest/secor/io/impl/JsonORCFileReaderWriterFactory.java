@@ -76,13 +76,13 @@ public class JsonORCFileReaderWriterFactory implements FileReaderWriterFactory {
 
     @Override
     public FileReader BuildFileReader(LogFilePath logFilePath,
-            CompressionCodec codec) throws Exception {
+                                      CompressionCodec codec) throws Exception {
         return new JsonORCFileReader(logFilePath, codec);
     }
 
     @Override
     public FileWriter BuildFileWriter(LogFilePath logFilePath,
-            CompressionCodec codec) throws Exception {
+                                      CompressionCodec codec) throws Exception {
         return new JsonORCFileWriter(logFilePath, codec);
     }
 
@@ -158,7 +158,7 @@ public class JsonORCFileReaderWriterFactory implements FileReaderWriterFactory {
             if (schema == null) {
                 String topic = logFilePath.getTopic();
                 throw new IllegalArgumentException(
-                    String.format("No schema is provided for topic '%s'", topic));
+                        String.format("No schema is provided for topic '%s'", topic));
             }
             List<TypeDescription> fieldTypes = schema.getChildren();
             converters = new JsonConverter[fieldTypes.size()];
@@ -223,9 +223,9 @@ public class JsonORCFileReaderWriterFactory implements FileReaderWriterFactory {
             return CompressionKind.LZ4;
         else if (codec instanceof SnappyCodec)
             return CompressionKind.SNAPPY;
-        // although GZip and ZLIB are not same thing
-        // there is no better named codec for this case,
-        // use hadoop Gzip codec to enable ORC ZLIB compression
+            // although GZip and ZLIB are not same thing
+            // there is no better named codec for this case,
+            // use hadoop Gzip codec to enable ORC ZLIB compression
         else if (codec instanceof GzipCodec)
             return CompressionKind.ZLIB;
         else

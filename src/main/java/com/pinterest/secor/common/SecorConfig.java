@@ -269,10 +269,6 @@ public class SecorConfig {
         return getInt("secor.consumer.threads");
     }
 
-    public int getMaxBadMessages() {
-        return getInt("secor.consumer.max_bad_messages", 1000);
-    }
-
     public long getMaxFileSizeBytes() {
         return getLong("secor.max.file.size.bytes");
     }
@@ -320,7 +316,7 @@ public class SecorConfig {
     public String getS3FileSystem() { return getString("secor.s3.filesystem"); }
 
     public boolean getSeparateContainersForTopics() {
-    	return getString("secor.swift.containers.for.each.topic").toLowerCase().equals("true");
+        return getString("secor.swift.containers.for.each.topic").toLowerCase().equals("true");
     }
 
     public String getSwiftContainer() {
@@ -394,7 +390,7 @@ public class SecorConfig {
     }
 
     public String getMessageTransformerClass(){
-    	return getString("secor.message.transformer.class");
+        return getString("secor.message.transformer.class");
     }
 
     public int getTopicPartitionForgetSeconds() {
@@ -442,7 +438,7 @@ public class SecorConfig {
     }
 
     public boolean getAwsProxyEnabled(){
-    	return getBoolean("aws.proxy.isEnabled");
+        return getBoolean("aws.proxy.isEnabled");
     }
 
     public String getAwsProxyHttpHost() {
@@ -490,19 +486,19 @@ public class SecorConfig {
     }
 
     public String getSwiftPublic() {
-    	return getString("swift.public");
+        return getString("swift.public");
     }
 
     public String getSwiftPort() {
-    	return getString("swift.port");
+        return getString("swift.port");
     }
 
     public String getSwiftGetAuth() {
-    	return getString("swift.use.get.auth");
+        return getString("swift.use.get.auth");
     }
 
     public String getSwiftApiKey() {
-    	return getString("swift.api.key");
+        return getString("swift.api.key");
     }
 
     public String getQuboleApiToken() {
@@ -518,7 +514,7 @@ public class SecorConfig {
     }
 
     public boolean getStatsDPrefixWithConsumerGroup(){
-    	return getBoolean("statsd.prefixWithConsumerGroup");
+        return getBoolean("statsd.prefixWithConsumerGroup");
     }
 
     public boolean getStatsdDogstatdsTagsEnabled() {
@@ -544,6 +540,8 @@ public class SecorConfig {
     public String getMessageTimestampName() {
         return getString("message.timestamp.name");
     }
+
+    public String getFallbackMessageTimestampName() { return getString("message.fallback.timestamp.name"); }
 
     public String getMessageTimestampNameSeparator() {
         return getString("message.timestamp.name.separator");
@@ -601,23 +599,23 @@ public class SecorConfig {
     }
 
     public String getFileReaderWriterFactory() {
-    	return getString("secor.file.reader.writer.factory");
+        return getString("secor.file.reader.writer.factory");
     }
 
     public String getFileReaderDelimiter(){
-      String readerDelimiter = getString("secor.file.reader.Delimiter");
-      if (readerDelimiter.length() > 1) {
-        throw new RuntimeException("secor.file.reader.Delimiter length can not be greater than 1 character");
-      }
-      return readerDelimiter;
+        String readerDelimiter = getString("secor.file.reader.Delimiter");
+        if (readerDelimiter.length() > 1) {
+            throw new RuntimeException("secor.file.reader.Delimiter length can not be greater than 1 character");
+        }
+        return readerDelimiter;
     }
 
     public String getFileWriterDelimiter(){
-      String writerDelimiter = getString("secor.file.writer.Delimiter");
-      if (writerDelimiter.length() > 1) {
-        throw new RuntimeException("secor.file.writer.Delimiter length can not be greater than 1 character");
-      }
-      return writerDelimiter;
+        String writerDelimiter = getString("secor.file.writer.Delimiter");
+        if (writerDelimiter.length() > 1) {
+            throw new RuntimeException("secor.file.writer.Delimiter length can not be greater than 1 character");
+        }
+        return writerDelimiter;
     }
 
     public String getZookeeperPath() {
@@ -662,7 +660,7 @@ public class SecorConfig {
     }
 
     public boolean getS3MD5HashPrefix() {
-      return getBoolean("secor.s3.prefix.md5hash");
+        return getBoolean("secor.s3.prefix.md5hash");
     }
 
     public String getAzureEndpointsProtocol() { return getString("secor.azure.endpoints.protocol"); }
@@ -716,6 +714,11 @@ public class SecorConfig {
         return Strings.isNullOrEmpty(timezone) ? TimeZone.getTimeZone("UTC") : TimeZone.getTimeZone(timezone);
     }
 
+    public TimeZone getMessageTimeZone() {
+        String timezone = getString("secor.message.timezone");
+        return Strings.isNullOrEmpty(timezone) ? TimeZone.getTimeZone("UTC") : TimeZone.getTimeZone(timezone);
+    }
+
     public boolean getBoolean(String name, boolean defaultValue) {
         return mProperties.getBoolean(name, defaultValue);
     }
@@ -727,8 +730,13 @@ public class SecorConfig {
     public void checkProperty(String name) {
         if (!mProperties.containsKey(name)) {
             throw new RuntimeException("Failed to find required configuration option '" +
-                                       name + "'.");
+                    name + "'.");
         }
+    }
+
+    public boolean checkPropertyProvided(String name) {
+        if (!mProperties.containsKey(name)) return false;
+        else return true;
     }
 
     public String getString(String name) {
@@ -822,4 +830,33 @@ public class SecorConfig {
     public String getORCSchemaProviderClass(){
         return getString("secor.orc.schema.provider");
     }
+
+    public String getS3OutputFilePattern() {
+        return getString("secor.s3.output_file_pattern");
+    }
+
+    public String getPartitionPrefixMapping() {
+        String[] map = getStringArray("secor.partition.prefix.mapping");
+        if (null != map)
+            return StringUtils.join(map, ',');
+        return "";
+    }
+
+    public boolean isPartitionPrefixEnabled() {
+        return getBoolean("secor.partition.prefix.enable", false);
+    }
+
+    public String getPartitionPrefixIdentifier() {
+        return getString("secor.partition.prefix.identifier", "");
+    }
+
+    public String getPartitionOutputDtFormat() {
+        return getString("secor.partition.output_dt_format");
+    }
+
+    public String getMaxFileAgePolicy() {
+        return getString("secor.max.file.age.policy");
+    }
+
+    public String[] getMessageChannelIdentifier() { return getStringArray("secor.partition.message.channel.identifier"); }
 }

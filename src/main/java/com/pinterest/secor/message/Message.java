@@ -78,12 +78,12 @@ public class Message {
 
     protected String fieldsToString(boolean truncate) {
         return "topic='" + mTopic + '\'' +
-               ", kafkaPartition=" + mKafkaPartition +
-               ", offset=" + mOffset +
-               ", kafkaKey=" + bytesToString(mKafkaKey, truncate) +
-               ", payload=" + bytesToString(mPayload, truncate) +
-               ", timestamp=" + mTimestamp +
-               ", headers=" + mHeaders;
+                ", kafkaPartition=" + mKafkaPartition +
+                ", offset=" + mOffset +
+                ", kafkaKey=" + bytesToString(mKafkaKey, truncate) +
+                ", payload=" + bytesToString(mPayload, truncate) +
+                ", timestamp=" + mTimestamp +
+                ", headers=" + mHeaders;
     }
 
     @Override

@@ -41,7 +41,7 @@ import com.pinterest.secor.util.ProtobufUtil;
 
 /**
  * Implementation for reading/writing protobuf messages to/from Parquet files.
- * 
+ *
  * @author Michael Spector (spektom@gmail.com)
  */
 public class ProtobufParquetFileReaderWriterFactory implements FileReaderWriterFactory {

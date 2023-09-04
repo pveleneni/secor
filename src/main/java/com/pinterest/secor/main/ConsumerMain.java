@@ -65,8 +65,10 @@ public class ConsumerMain {
             MetricCollector metricCollector = ReflectionUtil.createMetricCollector(config.getMetricsCollectorClass());
             metricCollector.initialize(config);
 
-            OstrichAdminService ostrichService = new OstrichAdminService(config);
-            ostrichService.start();
+            if (config.checkPropertyProvided("ostrich.port")) {
+                OstrichAdminService ostrichService = new OstrichAdminService(config);
+                ostrichService.start();
+            }
             FileUtil.configure(config);
 
             LogFileDeleter logFileDeleter = new LogFileDeleter(config);

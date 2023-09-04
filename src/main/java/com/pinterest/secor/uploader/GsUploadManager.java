@@ -87,16 +87,16 @@ public class GsUploadManager extends UploadManager {
     @Override
     public Handle<?> upload(LogFilePath localPath) throws Exception {
         final String gsBucket = mConfig.getGsBucket();
-        final String gsKey = localPath.withPrefix(mConfig.getGsPath()).getLogFilePath();
+        final String gsKey = localPath.withPrefix(mConfig.getGsPath(), mConfig).getLogFilePath();
         final File localFile = new File(localPath.getLogFilePath());
         final boolean directUpload = mConfig.getGsDirectUpload();
 
         LOG.info("uploading file {} to gs://{}/{}", localFile, gsBucket, gsKey);
 
         final BlobInfo sourceBlob = BlobInfo
-            .newBuilder(BlobId.of(gsBucket, gsKey))
-            .setContentType(Files.probeContentType(localFile.toPath()))
-            .build();
+                .newBuilder(BlobId.of(gsBucket, gsKey))
+                .setContentType(Files.probeContentType(localFile.toPath()))
+                .build();
 
         rateLimiter.acquire();
 
@@ -112,8 +112,8 @@ public class GsUploadManager extends UploadManager {
                     } else {
                         long startTime = System.nanoTime();
                         try (WriteChannel out = mClient.writer(sourceBlob);
-                            FileChannel in = new FileInputStream(localFile).getChannel();
-                            ) {
+                             FileChannel in = new FileInputStream(localFile).getChannel();
+                        ) {
                             ByteBuffer buffer = ByteBuffer.allocateDirect(1024 * 1024 * 5); // 5 MiB buffer (remember this is pr. thread)
 
                             int bytesRead;
@@ -143,8 +143,8 @@ public class GsUploadManager extends UploadManager {
 
                 try (FileInputStream fis = new FileInputStream(credentialsPath)) {
                     GoogleCredentials credential = GoogleCredentials
-                        .fromStream(new FileInputStream(credentialsPath))
-                        .createScoped(Collections.singleton(StorageScopes.CLOUD_PLATFORM));
+                            .fromStream(new FileInputStream(credentialsPath))
+                            .createScoped(Collections.singleton(StorageScopes.CLOUD_PLATFORM));
 
                     // Depending on the environment that provides the default credentials (e.g. Compute Engine, App
                     // Engine), the credentials may require us to specify the scopes we need explicitly.
@@ -164,19 +164,19 @@ public class GsUploadManager extends UploadManager {
             // and changed initial retry delay to 5 seconds from 1 seconds.
             // Changed max attempts from 6 to 12.
             builder.setRetrySettings(RetrySettings.newBuilder()
-                .setMaxAttempts(12)
-                .setInitialRetryDelay(Duration.ofMillis(5000L))
-                .setMaxRetryDelay(Duration.ofMillis(32_000L))
-                .setRetryDelayMultiplier(2.0)
-                .setTotalTimeout(Duration.ofMillis(50_000L))
-                .setInitialRpcTimeout(Duration.ofMillis(50_000L))
-                .setRpcTimeoutMultiplier(1.0)
-                .setMaxRpcTimeout(Duration.ofMillis(50_000L))
-                .build());
+                    .setMaxAttempts(12)
+                    .setInitialRetryDelay(Duration.ofMillis(5000L))
+                    .setMaxRetryDelay(Duration.ofMillis(32_000L))
+                    .setRetryDelayMultiplier(2.0)
+                    .setTotalTimeout(Duration.ofMillis(50_000L))
+                    .setInitialRpcTimeout(Duration.ofMillis(50_000L))
+                    .setRpcTimeoutMultiplier(1.0)
+                    .setMaxRpcTimeout(Duration.ofMillis(50_000L))
+                    .build());
 
             mStorageService = builder
-                .build()
-                .getService();
+                    .build()
+                    .getService();
         }
 
         return mStorageService;

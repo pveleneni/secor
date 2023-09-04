@@ -80,7 +80,7 @@ public class MessageReader {
                 topicPartitions.append(' ');
             }
             topicPartitions.append(topicPartition.getTopic() + '/' +
-                                   topicPartition.getPartition());
+                    topicPartition.getPartition());
         }
         StatsUtil.setLabel("secor.topic_partitions", topicPartitions.toString());
     }
@@ -100,7 +100,7 @@ public class MessageReader {
             return null;
         }
         TopicPartition topicPartition = new TopicPartition(message.getTopic(),
-                                                           message.getKafkaPartition());
+                message.getKafkaPartition());
         updateAccessTime(topicPartition);
         // Skip already committed messages.
         long committedOffsetCount = mOffsetTracker.getTrueCommittedOffsetCount(topicPartition);
@@ -118,9 +118,5 @@ public class MessageReader {
 
     public void commit(TopicPartition topicPartition, long offset) {
         mKafkaMessageIterator.commit(topicPartition, offset);
-    }
-
-    public long getCommitedOffsetCount(TopicPartition topicPartition) {
-        return mKafkaMessageIterator.getKafkaCommitedOffsetCount(topicPartition);
     }
 }

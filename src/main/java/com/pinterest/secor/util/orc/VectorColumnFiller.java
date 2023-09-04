@@ -46,7 +46,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 
+ *
  * @author Ashish (ashu.impetus@gmail.com)
  *
  */
@@ -392,41 +392,41 @@ public class VectorColumnFiller {
 
     public static JsonConverter createConverter(TypeDescription schema) {
         switch (schema.getCategory()) {
-        case BYTE:
-        case SHORT:
-        case INT:
-        case LONG:
-            return new LongColumnConverter();
-        case FLOAT:
-        case DOUBLE:
-            return new DoubleColumnConverter();
-        case CHAR:
-        case VARCHAR:
-        case STRING:
-            return new StringColumnConverter();
-        case DECIMAL:
-            return new DecimalColumnConverter();
-        case TIMESTAMP:
-            return new TimestampColumnConverter();
-        case BINARY:
-            return new BinaryColumnConverter();
-        case BOOLEAN:
-            return new BooleanColumnConverter();
-        case STRUCT:
-            return new StructColumnConverter(schema);
-        case LIST:
-            return new ListColumnConverter(schema);
-        case MAP:
-            return new MapColumnConverter(schema);
-        case UNION:
-            return new UnionColumnConverter(schema);
-        default:
-            throw new IllegalArgumentException("Unhandled type " + schema);
+            case BYTE:
+            case SHORT:
+            case INT:
+            case LONG:
+                return new LongColumnConverter();
+            case FLOAT:
+            case DOUBLE:
+                return new DoubleColumnConverter();
+            case CHAR:
+            case VARCHAR:
+            case STRING:
+                return new StringColumnConverter();
+            case DECIMAL:
+                return new DecimalColumnConverter();
+            case TIMESTAMP:
+                return new TimestampColumnConverter();
+            case BINARY:
+                return new BinaryColumnConverter();
+            case BOOLEAN:
+                return new BooleanColumnConverter();
+            case STRUCT:
+                return new StructColumnConverter(schema);
+            case LIST:
+                return new ListColumnConverter(schema);
+            case MAP:
+                return new MapColumnConverter(schema);
+            case UNION:
+                return new UnionColumnConverter(schema);
+            default:
+                throw new IllegalArgumentException("Unhandled type " + schema);
         }
     }
 
     public static void fillRow(int rowIndex, JsonConverter[] converters,
-            TypeDescription schema, VectorizedRowBatch batch, JsonObject data) {
+                               TypeDescription schema, VectorizedRowBatch batch, JsonObject data) {
         List<String> fieldNames = schema.getFieldNames();
         for (int c = 0; c < converters.length; ++c) {
             JsonElement field = data.get(fieldNames.get(c));
