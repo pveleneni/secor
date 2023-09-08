@@ -297,7 +297,7 @@
             <artifactId>zookeeper</artifactId>
             <version>3.9.0</version>
         </dependency>
-        <!-- <dependency>
+        <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-auth</artifactId>
             <version>3.3.6</version>
@@ -315,18 +315,14 @@
                     <artifactId>hadoop-shaded-guava</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency> -->
-        <!-- <dependency>
+        </dependency>
+        <dependency>
             <groupId>org.apache.hadoop.thirdparty</groupId>
             <artifactId>hadoop-shaded-guava</artifactId>
             <version>1.1.1</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency> -->
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/jars/hadoop-shaded-guava-1.1.1.jar</systemPath>
+        </dependency>
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>
