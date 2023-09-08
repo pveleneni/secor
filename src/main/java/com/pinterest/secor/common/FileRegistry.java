@@ -150,15 +150,15 @@ public class FileRegistry {
      */
     public void deletePath(LogFilePath path) throws IOException {
         TopicPartitionGroup topicPartition = new TopicPartitionGroup(path.getTopic(),
-                                                           path.getKafkaPartitions());
+                path.getKafkaPartitions());
         HashSet<LogFilePath> paths = mFiles.get(topicPartition);
         paths.remove(path);
         if (paths.isEmpty()) {
             mFiles.remove(topicPartition);
             StatsUtil.clearLabel("secor.size." + topicPartition.getTopic() + "." +
-                                 topicPartition.getPartitions()[0]);
+                    topicPartition.getPartitions()[0]);
             StatsUtil.clearLabel("secor.modification_age_sec." + topicPartition.getTopic() + "." +
-                                 topicPartition.getPartitions()[0]);
+                    topicPartition.getPartitions()[0]);
         }
         deleteWriter(path);
         FileUtil.delete(path.getLogFilePath());
@@ -215,7 +215,7 @@ public class FileRegistry {
         HashSet<LogFilePath> paths = mFiles.get(topicPartitionGroup);
         if (paths == null) {
             LOG.warn("No paths found for topic {} partition {}", topicPartitionGroup.getTopic(),
-                Arrays.toString(topicPartitionGroup.getPartitions()));
+                    Arrays.toString(topicPartitionGroup.getPartitions()));
         } else {
             for (LogFilePath path : paths) {
                 deleteWriter(path);
@@ -244,7 +244,7 @@ public class FileRegistry {
             }
         }
         StatsUtil.setLabel("secor.size." + topicPartitionGroup.getTopic() + "." +
-            Arrays.toString(topicPartitionGroup.getPartitions()), Long.toString(result));
+                Arrays.toString(topicPartitionGroup.getPartitions()), Long.toString(result));
         return result;
     }
 
@@ -288,7 +288,7 @@ public class FileRegistry {
             result = -1;
         }
         StatsUtil.setLabel("secor.modification_age_sec." + topicPartitionGroup.getTopic() + "." +
-            Arrays.toString(topicPartitionGroup.getPartitions()), Long.toString(result));
+                Arrays.toString(topicPartitionGroup.getPartitions()), Long.toString(result));
         return result;
     }
 

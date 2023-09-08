@@ -22,7 +22,7 @@ import com.pinterest.secor.message.Message;
 
 /**
  * Message transformer And filter Interface
- * 
+ *
  * @author Ashish (ashu.impetus@gmail.com)
  *
  */

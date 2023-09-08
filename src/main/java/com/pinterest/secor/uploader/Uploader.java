@@ -66,7 +66,6 @@ public class Uploader {
     protected String mTopicFilter;
 
     private boolean isOffsetsStorageKafka = false;
-    private boolean isOffsetsStorageZookeeper = false;
 
 
     /**
@@ -76,9 +75,7 @@ public class Uploader {
      * @param offsetTracker Tracker of the current offset of topics partitions
      * @param fileRegistry Registry of log files on a per-topic and per-partition basis
      * @param uploadManager Manager of the physical upload of log files to the remote repository
-     * @param messageReader messageReader
      * @param metricCollector component that ingest metrics into monitoring system
-     * @param deterministicUploadPolicyTracker deterministicUploadPolicyTracker
      */
     public void init(SecorConfig config, OffsetTracker offsetTracker, FileRegistry fileRegistry,
                      UploadManager uploadManager, MessageReader messageReader, MetricCollector metricCollector,
@@ -105,32 +102,28 @@ public class Uploader {
             isOffsetsStorageKafka = true;
         }
         mUploadLastSeenOffset = mConfig.getUploadLastSeenOffset();
-        if (mConfig.getOffsetsStorage().equals(SecorConstants.KAFKA_OFFSETS_STORAGE_ZK) || mConfig.getDualCommitEnabled().equals("true")) {
-            isOffsetsStorageZookeeper = true;
-        }
     }
 
     protected void uploadFiles(TopicPartition topicPartition) throws Exception {
-        LOG.debug("Uploading for: " + topicPartition);
         long committedOffsetCount = mOffsetTracker.getTrueCommittedOffsetCount(topicPartition);
         long lastSeenOffset = mOffsetTracker.getLastSeenOffset(topicPartition);
 
         String stripped = StringUtils.strip(mConfig.getZookeeperPath(), "/");
         final String lockPath = Joiner.on("/").skipNulls().join(
-            "",
-            stripped.isEmpty() ? null : stripped,
-            "secor",
-            "locks",
-            topicPartition.getTopic(),
-            topicPartition.getPartition());
+                "",
+                stripped.isEmpty() ? null : stripped,
+                "secor",
+                "locks",
+                topicPartition.getTopic(),
+                topicPartition.getPartition());
 
         mZookeeperConnector.lock(lockPath);
         try {
             // Check if the committed offset has changed.
-            long remoteComittedOffsetCount = getRemoteComittedOffsetCount(topicPartition);
-            if (remoteComittedOffsetCount == committedOffsetCount) {
-                //This is probably not possible in Kafka without zookeeper
-                if (mUploadLastSeenOffset && isOffsetsStorageZookeeper) {
+            long zookeeperCommittedOffsetCount = mZookeeperConnector.getCommittedOffsetCount(
+                    topicPartition);
+            if (zookeeperCommittedOffsetCount == committedOffsetCount) {
+                if (mUploadLastSeenOffset) {
                     long zkLastSeenOffset = mZookeeperConnector.getLastSeenOffsetCount(topicPartition);
                     // If the in-memory lastSeenOffset is less than ZK's, this means there was a failed
                     // attempt uploading for this topic partition and we already have some files uploaded
@@ -150,7 +143,7 @@ public class Uploader {
                     // Note We use offset + 1 throughout secor when we persist to ZK
                     if (lastSeenOffset + 1 < zkLastSeenOffset) {
                         LOG.warn("TP {}, ZK lastSeenOffset {}, in-memory lastSeenOffset {}, skip uploading this time",
-                            topicPartition, zkLastSeenOffset, lastSeenOffset + 1);
+                                topicPartition, zkLastSeenOffset, lastSeenOffset + 1);
                         mMetricCollector.increment("uploader.offset_delays", topicPartition.getTopic());
                     }
                     LOG.info("Setting lastSeenOffset for {} with {}", topicPartition, lastSeenOffset + 1);
@@ -176,22 +169,16 @@ public class Uploader {
                 if (mDeterministicUploadPolicyTracker != null) {
                     mDeterministicUploadPolicyTracker.reset(topicPartition);
                 }
-
+                mZookeeperConnector.setCommittedOffsetCount(topicPartition, lastSeenOffset + 1);
                 mOffsetTracker.setCommittedOffsetCount(topicPartition, lastSeenOffset + 1);
-
                 if (isOffsetsStorageKafka) {
                     mMessageReader.commit(topicPartition, lastSeenOffset + 1);
                 }
-
-                if (isOffsetsStorageZookeeper) {
-                    mZookeeperConnector.setCommittedOffsetCount(topicPartition, lastSeenOffset + 1);
-                }
-
                 mMetricCollector.increment("uploader.file_uploads.count", paths.size(), topicPartition.getTopic());
             } else {
                 LOG.warn("Zookeeper committed offset didn't match for topic {} partition {}: {} vs {}",
-                        topicPartition.getTopic(), topicPartition.getTopic(), remoteComittedOffsetCount,
-                         committedOffsetCount);
+                        topicPartition.getTopic(), topicPartition.getTopic(), zookeeperCommittedOffsetCount,
+                        committedOffsetCount);
                 mMetricCollector.increment("uploader.offset_mismatches", topicPartition.getTopic());
             }
         } finally {
@@ -231,8 +218,10 @@ public class Uploader {
         mFileRegistry.deleteWriter(srcPath);
         try {
             CompressionCodec codec = null;
+            String extension = "";
             if (mConfig.getCompressionCodec() != null && !mConfig.getCompressionCodec().isEmpty()) {
                 codec = CompressionUtil.createCompressionCodec(mConfig.getCompressionCodec());
+                extension = codec.getDefaultExtension();
             }
             reader = createReader(srcPath, codec);
             KeyValue keyVal;
@@ -240,13 +229,13 @@ public class Uploader {
                 if (keyVal.getOffset() >= startOffset) {
                     if (writer == null) {
                         String localPrefix = mConfig.getLocalPath() + '/' +
-                            IdUtil.getLocalMessageDir();
+                                IdUtil.getLocalMessageDir();
                         dstPath = new LogFilePath(localPrefix, srcPath.getTopic(),
-                                                  srcPath.getPartitions(), srcPath.getGeneration(),
-                                                  srcPath.getKafkaPartition(), startOffset,
-                                                  srcPath.getExtension());
+                                srcPath.getPartitions(), srcPath.getGeneration(),
+                                srcPath.getKafkaPartition(), startOffset,
+                                extension);
                         writer = mFileRegistry.getOrCreateWriter(dstPath,
-                        		codec);
+                                codec);
                     }
                     writer.write(keyVal);
                     if (mDeterministicUploadPolicyTracker != null) {
@@ -297,7 +286,7 @@ public class Uploader {
         }
         if (topic.matches(mTopicFilter)){
             if (DateTime.now().minuteOfHour().get() == mConfig.getUploadMinuteMark()){
-               return true;
+                return true;
             }
         }
         return false;
@@ -313,21 +302,22 @@ public class Uploader {
             final int fileCount = mFileRegistry.getActiveFileCount();
             LOG.debug("size: " + size + " modificationAge: " + modificationAgeSec);
             shouldUpload = forceUpload ||
-                           activeFileCountExceeded(fileCount) ||
-                           size >= mConfig.getMaxFileSizeBytes() ||
-                           modificationAgeSec >= mConfig.getMaxFileAgeSeconds() ||
-                           isRequiredToUploadAtTime(topicPartition);
+                    activeFileCountExceeded(fileCount) ||
+                    size >= mConfig.getMaxFileSizeBytes() ||
+                    modificationAgeSec >= mConfig.getMaxFileAgeSeconds() ||
+                    isRequiredToUploadAtTime(topicPartition);
         }
         if (shouldUpload) {
-            long newOffsetCount = getRemoteComittedOffsetCount(topicPartition);
+            long newOffsetCount = mZookeeperConnector.getCommittedOffsetCount(topicPartition);
             long oldOffsetCount = mOffsetTracker.setCommittedOffsetCount(topicPartition,
                     newOffsetCount);
             long lastSeenOffset = mOffsetTracker.getLastSeenOffset(topicPartition);
             if (oldOffsetCount == newOffsetCount) {
+                LOG.debug("Uploading for: " + topicPartition);
                 uploadFiles(topicPartition);
             } else if (newOffsetCount > lastSeenOffset) {  // && oldOffset < newOffset
                 LOG.debug("last seen offset {} is lower than committed offset count {}. Deleting files in topic {} partition {}",
-                        lastSeenOffset, newOffsetCount, topicPartition.getTopic(), topicPartition.getPartition());
+                        lastSeenOffset, newOffsetCount,topicPartition.getTopic(), topicPartition.getPartition());
                 mMetricCollector.increment("uploader.partition_deletes", topicPartition.getTopic());
                 // There was a rebalancing event and someone committed an offset beyond that of the
                 // current message.  We need to delete the local file.
@@ -355,15 +345,6 @@ public class Uploader {
         return mConfig.getMaxActiveFiles() > -1 && fileCount > mConfig.getMaxActiveFiles();
     }
 
-    private long getRemoteComittedOffsetCount(TopicPartition topicPartition) throws Exception {
-        //If storing offsets in Zookeeper is enabled we are going to always use those offsets.
-        if (isOffsetsStorageZookeeper) {
-            return mZookeeperConnector.getCommittedOffsetCount(topicPartition);
-        } else {
-            return mMessageReader.getCommitedOffsetCount(topicPartition);
-        }
-    }
-
     /**
      * Apply the Uploader policy for pushing partition files to the underlying storage.
      *
@@ -373,7 +354,6 @@ public class Uploader {
      * This method could be subclassed to provide an alternate policy. The custom uploader
      * class name would need to be specified in the secor.upload.class.
      *
-     * @param forceUpload forceUpload
      * @throws Exception if any error occurs while appying the policy
      */
     public void applyPolicy(boolean forceUpload) throws Exception {

@@ -42,14 +42,14 @@ import com.pinterest.secor.common.SecorConfig;
  * Various utilities for working with protocol buffer encoded messages. This
  * utility will look for protobuf class in the configuration. It can be either
  * per Kafka topic configuration, for example:
- * 
+ *
  * <code>secor.protobuf.message.class.&lt;topic&gt;=&lt;protobuf class name&gt;</code>
- * 
+ *
  * or, it can be global configuration for all topics (in case all the topics
  * transfer the same message type):
- * 
+ *
  * <code>secor.protobuf.message.class.*=&lt;protobuf class name&gt;</code>
- * 
+ *
  * @author Michael Spector (spektom@gmail.com)
  */
 public class ProtobufUtil {
@@ -66,7 +66,7 @@ public class ProtobufUtil {
 
     /**
      * Creates new instance of {@link ProtobufUtil}
-     * 
+     *
      * @param config
      *            Secor configuration instance
      * @throws RuntimeException
@@ -129,7 +129,7 @@ public class ProtobufUtil {
 
     /**
      * Returns configured protobuf message class for the given Kafka topic
-     * 
+     *
      * @param topic
      *            Kafka topic
      * @return protobuf message class used by this utility instance, or

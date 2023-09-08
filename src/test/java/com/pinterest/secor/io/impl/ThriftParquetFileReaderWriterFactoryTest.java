@@ -49,23 +49,23 @@ import junit.framework.TestCase;
 
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore({
-    "com.ctc.wstx.stax.*",
-    "com.ctc.wstx.io.*",
-    "com.sun.*",
-    "com.sun.org.apache.xalan.",
-    "com.sun.org.apache.xerces.",
-    "com.sun.xml.internal.stream.*",
-    "javax.activation.*",
-    "javax.management.",
-    "javax.xml.",
-    "javax.xml.stream.*",
-    "javax.security.auth.login.*",
-    "javax.security.auth.spi.*",
-    "org.apache.hadoop.security.*",
-    "org.codehaus.stax2.*",
-    "org.w3c.",
-    "org.xml.",
-    "org.w3c.dom."})
+        "com.ctc.wstx.stax.*",
+        "com.ctc.wstx.io.*",
+        "com.sun.*",
+        "com.sun.org.apache.xalan.",
+        "com.sun.org.apache.xerces.",
+        "com.sun.xml.internal.stream.*",
+        "javax.activation.*",
+        "javax.management.",
+        "javax.xml.",
+        "javax.xml.stream.*",
+        "javax.security.auth.login.*",
+        "javax.security.auth.spi.*",
+        "org.apache.hadoop.security.*",
+        "org.codehaus.stax2.*",
+        "org.w3c.",
+        "org.xml.",
+        "org.w3c.dom."})
 public class ThriftParquetFileReaderWriterFactoryTest extends TestCase {
 
     private SecorConfig config;
@@ -83,7 +83,7 @@ public class ThriftParquetFileReaderWriterFactoryTest extends TestCase {
         Mockito.when(config.getFileReaderWriterFactory())
                 .thenReturn(ThriftParquetFileReaderWriterFactory.class.getName());
         Mockito.when(config.getThriftProtocolClass())
-        .thenReturn(TCompactProtocol.class.getName());
+                .thenReturn(TCompactProtocol.class.getName());
         Mockito.when(ParquetUtil.getParquetBlockSize(config))
                 .thenReturn(ParquetWriter.DEFAULT_BLOCK_SIZE);
         Mockito.when(ParquetUtil.getParquetPageSize(config))
@@ -113,7 +113,7 @@ public class ThriftParquetFileReaderWriterFactoryTest extends TestCase {
         FileReader fileReader = ReflectionUtil.createFileReader(config.getFileReaderWriterFactory(), tempLogFilePath,
                 null, config);
         TDeserializer deserializer = new TDeserializer(new TCompactProtocol.Factory());
-        
+
         KeyValue kvout = fileReader.next();
         assertEquals(kv1.getOffset(), kvout.getOffset());
         assertArrayEquals(kv1.getValue(), kvout.getValue());

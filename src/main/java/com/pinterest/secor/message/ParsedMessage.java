@@ -34,7 +34,7 @@ public class ParsedMessage extends Message {
     @Override
     public String toString() {
         return "ParsedMessage{" + fieldsToString(false) +  ", mPartitions=" +
-               Arrays.toString(mPartitions) + '}';
+                Arrays.toString(mPartitions) + '}';
     }
 
     public String toTruncatedString() {

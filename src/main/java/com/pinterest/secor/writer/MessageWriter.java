@@ -70,14 +70,14 @@ public class MessageWriter {
         } else if (mFileExtension == null){
             mFileExtension = "";
         }
-        
+
         mLocalPrefix = mConfig.getLocalPath() + '/' + IdUtil.getLocalMessageDir();
         mGeneration = mConfig.getGeneration();
     }
 
     public void adjustOffset(Message message, boolean isLegacyConsumer) throws IOException {
         TopicPartition topicPartition = new TopicPartition(message.getTopic(),
-                                                           message.getKafkaPartition());
+                message.getKafkaPartition());
         long lastSeenOffset = mOffsetTracker.getLastSeenOffset(topicPartition);
         //this validation logic is for duplicates removing as no rebalancing callbacks is incompatible with LegacyKafkaMessageIterator
         if (isLegacyConsumer && message.getOffset() != lastSeenOffset + 1) {
@@ -97,13 +97,13 @@ public class MessageWriter {
 
     public void write(ParsedMessage message) throws Exception {
         TopicPartition topicPartition = new TopicPartition(message.getTopic(),
-                                                           message.getKafkaPartition());
+                message.getKafkaPartition());
         long offset = mOffsetTracker.getAdjustedCommittedOffsetCount(topicPartition);
         LogFilePath path = new LogFilePath(mLocalPrefix, mGeneration, offset, message,
-        		mFileExtension);
+                mFileExtension);
         FileWriter writer = mFileRegistry.getOrCreateWriter(path, mCodec);
         writer.write(new KeyValue(message.getOffset(), message.getKafkaKey(), message.getPayload(), message.getTimestamp(), message.getHeaders()));
         LOG.debug("appended message {} to file {}.  File length {}",
-                  message, path, writer.getLength());
+                message, path, writer.getLength());
     }
 }

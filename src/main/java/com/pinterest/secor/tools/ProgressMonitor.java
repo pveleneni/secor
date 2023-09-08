@@ -112,7 +112,7 @@ public class ProgressMonitor {
             if (body != null) {
                 // Send request.
                 DataOutputStream dataOutputStream = new DataOutputStream(
-                    connection.getOutputStream());
+                        connection.getOutputStream());
                 dataOutputStream.writeBytes(body);
                 dataOutputStream.flush();
                 dataOutputStream.close();
@@ -124,7 +124,7 @@ public class ProgressMonitor {
             Map response = (Map) JSONValue.parse(reader);
             if (!response.get("failed").equals(0)) {
                 throw new RuntimeException("url " + url + " with body " + body + " failed " +
-                    JSONObject.toJSONString(response));
+                        JSONObject.toJSONString(response));
             }
         } catch (IOException exception) {
             if (connection != null) {
@@ -224,7 +224,7 @@ public class ProgressMonitor {
                         long lastOffset = lastMessage.getOffset();
                         long lastTimestampMillis = getTimestamp(lastMessage);
                         assert committedOffset <= lastOffset: Long.toString(committedOffset) + " <= " +
-                            lastOffset;
+                                lastOffset;
 
                         long offsetLag = lastOffset - committedOffset;
                         long timestampMillisLag = lastTimestampMillis - committedTimestampMillis;

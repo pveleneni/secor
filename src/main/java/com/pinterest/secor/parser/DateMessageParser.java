@@ -77,7 +77,7 @@ public class DateMessageParser extends MessageParser {
                     result[0] = mDtPrefix + outputFormatter.format(dateFormat);
                 } catch (Exception e) {
                     LOG.warn("Impossible to convert date = {} with the input pattern = {}. Using date default = {}",
-                             fieldValue.toString(), inputPattern.toString(), result[0]);
+                            fieldValue.toString(), inputPattern.toString(), result[0]);
                 }
             }
         }

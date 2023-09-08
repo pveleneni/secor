@@ -111,7 +111,7 @@ public class PartitionFinalizer {
                 mConfig.getGeneration(), 0, 0, mFileExtension);
 
             if (FileUtil.s3PathPrefixIsAltered(logFilePath.getLogFilePath(), mConfig)) {
-                logFilePath = logFilePath.withPrefix(FileUtil.getS3AlternativePrefix(mConfig));
+                logFilePath = logFilePath.withPrefix(FileUtil.getS3AlternativePrefix(mConfig), mConfig);
             }
 
             String logFileDir = logFilePath.getLogFileDir();
@@ -190,7 +190,7 @@ public class PartitionFinalizer {
                 mConfig.getGeneration(), 0, 0, mFileExtension);
 
             if (FileUtil.s3PathPrefixIsAltered(logFilePath.getLogFilePath(), mConfig)) {
-                logFilePath = logFilePath.withPrefix(FileUtil.getS3AlternativePrefix(mConfig));
+                logFilePath = logFilePath.withPrefix(FileUtil.getS3AlternativePrefix(mConfig), mConfig);
                 LOG.info("Will finalize alternative s3 logFilePath {}", logFilePath);
             }
 

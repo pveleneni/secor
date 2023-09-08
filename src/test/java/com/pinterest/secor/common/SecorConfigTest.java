@@ -77,4 +77,16 @@ public class SecorConfigTest {
 
         assertEquals("com.pinterest.secor.monitoring.OstrichMetricCollector", secorConfig.getMetricsCollectorClass());
     }
+
+    @Test
+    public void shouldCheckIfConfigurationExists() throws ConfigurationException {
+
+        URL configFile = Thread.currentThread().getContextClassLoader().getResource("secor.test1.partition.properties");
+        PropertiesConfiguration properties = new PropertiesConfiguration(configFile);
+
+        SecorConfig secorConfig = new SecorConfig(properties);
+
+        assertEquals(false, secorConfig.checkPropertyProvided("ostrich.port"));
+        assertEquals(true, secorConfig.checkPropertyProvided("secor.kafka.group"));
+    }
 }

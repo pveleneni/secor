@@ -42,8 +42,8 @@ import com.pinterest.secor.util.ThriftUtil;
  * Adapted from
  * com.pinterest.secor.io.impl.ProtobufParquetFileReaderWriterFactory
  * Implementation for reading/writing thrift messages to/from Parquet files.
- * 
- 
+ *
+
  */
 public class ThriftParquetFileReaderWriterFactory implements FileReaderWriterFactory {
 
