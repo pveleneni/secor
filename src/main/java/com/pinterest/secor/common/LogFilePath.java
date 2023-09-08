@@ -231,7 +231,6 @@ public class LogFilePath {
         List<String> pathElements = new ArrayList<String>();
         pathElements.add(mPrefix);
         pathElements.add(StrSubstitutor.replace(pattern, getValueMap(), "{", "}"));
-        System.out.println("Path:" + StringUtils.join(pathElements, "/") + mExtension);
         return StringUtils.join(pathElements, "/") + mExtension;
     }
 

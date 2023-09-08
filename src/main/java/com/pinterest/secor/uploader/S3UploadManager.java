@@ -115,7 +115,6 @@ public class S3UploadManager extends UploadManager {
         }
 
         if (mConfig.getAwsClientPathStyleAccess() && !endpoint.isEmpty()) {
-            System.out.println("Using endpoint: " + endpoint);
             client = AmazonS3ClientBuilder.standard()
                     .withRegion(region)
                     .withCredentials(provider)
@@ -124,7 +123,6 @@ public class S3UploadManager extends UploadManager {
                     .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, region))
                     .build();
         } else if (mConfig.getAwsClientPathStyleAccess() && endpoint.isEmpty()) {
-            System.out.println("Using default endpoint: " + Regions.fromName(region));
             client = AmazonS3ClientBuilder.standard()
                     .withRegion(region)
                     .withCredentials(provider)
@@ -135,7 +133,6 @@ public class S3UploadManager extends UploadManager {
                 !Objects.equals(secretKey, "") ||
                 !Objects.equals(sessionToken, "")
         ) {
-            System.out.println("Using credentials: " + Regions.fromName(region));
             client = AmazonS3ClientBuilder.standard()
                     .withRegion(region)
                     .withCredentials(provider)
@@ -143,7 +140,6 @@ public class S3UploadManager extends UploadManager {
                     .build();
         }
         else {
-            System.out.println("Using service account: " + WebIdentityTokenCredentialsProvider.create().toString());
             client = AmazonS3ClientBuilder.standard()
                     .withRegion(region)
                     .withCredentials(WebIdentityTokenCredentialsProvider.create())
