@@ -293,26 +293,38 @@ public class Uploader {
     }
 
     protected void checkTopicPartition(TopicPartition topicPartition, boolean forceUpload) throws Exception {
+        System.out.println("Check Partition Method - Start");
+        System.out.println("Topic Partition - " + topicPartition.toString());
+        System.out.println("Force Upload - " + forceUpload);
         boolean shouldUpload;
         if (mDeterministicUploadPolicyTracker != null) {
+            System.out.println("Check Partition Method - Deterministic Upload Policy Tracker");
+            System.out.println(mDeterministicUploadPolicyTracker.shouldUpload(topicPartition));
             shouldUpload = mDeterministicUploadPolicyTracker.shouldUpload(topicPartition);
         } else {
             final long size = mFileRegistry.getSize(topicPartition);
             final long modificationAgeSec = mFileRegistry.getModificationAgeSec(topicPartition);
             final int fileCount = mFileRegistry.getActiveFileCount();
             LOG.debug("size: " + size + " modificationAge: " + modificationAgeSec);
+            System.out.println("Check Partition Method - Size " + size);
+            System.out.println("Check Partition Method - Max file size " + mConfig.getMaxFileSizeBytes());
             shouldUpload = forceUpload ||
                     activeFileCountExceeded(fileCount) ||
                     size >= mConfig.getMaxFileSizeBytes() ||
                     modificationAgeSec >= mConfig.getMaxFileAgeSeconds() ||
                     isRequiredToUploadAtTime(topicPartition);
         }
+        System.out.println("Check Partition Method - Should Upload - " + shouldUpload);
         if (shouldUpload) {
             long newOffsetCount = mZookeeperConnector.getCommittedOffsetCount(topicPartition);
+            System.out.println("Check Partition Method - ZooKeeper Offset (newOffsetCount) - " + newOffsetCount);
             long oldOffsetCount = mOffsetTracker.setCommittedOffsetCount(topicPartition,
                     newOffsetCount);
+            System.out.println("Check Partition Method - Kafka Offset (oldOffsetCount) - " + oldOffsetCount);
             long lastSeenOffset = mOffsetTracker.getLastSeenOffset(topicPartition);
+            System.out.println("Check Partition Method - Last Seen Offset (lastSeenOffset) - " + lastSeenOffset);
             if (oldOffsetCount == newOffsetCount) {
+                System.out.println("Check Partition Method - Start Upload");
                 LOG.debug("Uploading for: " + topicPartition);
                 uploadFiles(topicPartition);
             } else if (newOffsetCount > lastSeenOffset) {  // && oldOffset < newOffset
@@ -338,6 +350,7 @@ public class Uploader {
                 // Check again! This is especially important if this was an "upload in graceful shutdown".
                 checkTopicPartition(topicPartition, forceUpload);
             }
+            System.out.println("Check Partition Method - End");
         }
     }
 
